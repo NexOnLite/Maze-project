@@ -1,11 +1,11 @@
+from random import *
+
 """
   Notes :
   Le programme génère pour l'instant un labyrinthe "vide"
   et positionne son entrée ainsi que sa sortie, respectivement
   indiquées par "E" et "S".
 """
-
-from random import choice, randint
 
 def mazeGenerator(width, height):
     
@@ -40,10 +40,15 @@ def mazeGenerator(width, height):
     maze[exitYCoord][exitXCoord] = "S"
 
     #Affichage du labyrinthe
+    print("\n"+"Affichage du labyrinthe : \n")
     for line in maze:
         print("".join(line))
 
 #Demande des dimensions à l'utilisateur
+print("\n"+"#"*71)
+print("Bienvenue dans le résolveur de labyrinthes made in TW3's laboratories !")
+print("#"*71, "\n")
+
 widthUserChoice = int(input("Veuillez saisir la largeur du labyrinthe : "))
 heightUserChoice = int(input("Veuillez saisir la hauteur du labyrinthe : "))
 
