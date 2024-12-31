@@ -1,11 +1,4 @@
-from random import *
-
-"""
-  Notes :
-  Le programme génère pour l'instant un labyrinthe "vide"
-  et positionne son entrée ainsi que sa sortie, respectivement
-  indiquées par "E" et "S".
-"""
+from random import choice, randint
 
 def mazeGenerator(width, height):
     
@@ -39,6 +32,18 @@ def mazeGenerator(width, height):
     maze[entryYCoord][entryXCoord] = "E"
     maze[exitYCoord][exitXCoord] = "S"
 
+    #Génération des chemins
+    def wallAround(direction, XCoord, YCoord):
+        directionDict = {"droite":1, "gauche":-1, "haut":-1, "bas":1}
+        if list(directionDict.keys()).index(direction) < 2:
+            nextWallXCoord, nextWallYCoord = XCoord+directionDict[direction] ,YCoord
+            nextWall = maze[nextWallYCoord][nextWallXCoord]
+            return(nextWall)
+        else:
+            nextWallXCoord, nextWallYCoord = XCoord, YCoord+directionDict[direction]
+            nextWall = maze[nextWallYCoord][nextWallXCoord]
+            return(nextWall)
+
     #Affichage du labyrinthe
     print("\n"+"Affichage du labyrinthe : \n")
     for line in maze:
@@ -46,7 +51,7 @@ def mazeGenerator(width, height):
 
 #Demande des dimensions à l'utilisateur
 print("\n"+"#"*71)
-print("Bienvenue dans le résolveur de labyrinthes made in TW3's laboratories !")
+print("Bienvenue dans le résolveur de labyrinthes made in TW3 laboratories !")
 print("#"*71, "\n")
 
 widthUserChoice = int(input("Veuillez saisir la largeur du labyrinthe : "))
