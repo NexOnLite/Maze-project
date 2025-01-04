@@ -1,60 +1,93 @@
-from random import choice, randint
+from random import *
+
+"""
+    Notes : ce programme génère un labyrinthe
+    où chaque mur est représenté par un "" et
+    chaque chemin est représenté par un "█". La gestion
+    des erreurs d'entrée n'est pas encore prise en charge
+    au même titre que l'algorithme de résolution du labyrinthe.
+"""
 
 def mazeGenerator(width, height):
-    
-    #Création du labyrinthe
-    maze = [[" " for i in range(width)] for i in range(height)]
+    #On crée le labyrinthe à l'aide d'"une liste de listes" - on se contente au départ d'un labyrinthe composé de "█"
+    maze = [["█" for i in range(width)] for j in range(height)]
 
-    #Génération des murs
-    for i in range(height):
-        maze[i][0] = "#" #Création du mur gauche
-        maze[i][width - 1] = "#" #Création du mur droit
-
-    for j in range(width):
-        maze[0][j] = "#" #Création du mur du haut
-        maze[height - 1][j] = "#" #Création du mur du bas
-
-    #Génération des coordonnées de l'entrée et de la sortie du labyrinthe
+    #On génère les coordonnées de l'entrée et de la sortie du labyrinthe
     def topBottomWall():
         YCoord = choice([0, height - 1])
-        XCoord = randint(1, width - 2)
+        XCoord = choice(range(1, width - 1, 2))  #Toujours sur une cellule impaire
         return XCoord, YCoord
 
     def leftRightWall():
-        YCoord = randint(1, height - 2)
+        YCoord = choice(range(1, height - 1, 2))  #Toujours sur une cellule impaire
         XCoord = choice([0, width - 1])
         return XCoord, YCoord
 
-    entryXCoord, entryYCoord = choice([topBottomWall(), leftRightWall()])
-    exitXCoord, exitYCoord = choice([topBottomWall(), leftRightWall()])
+    entryCoords = choice([topBottomWall(), leftRightWall()])
+    exitCoords = choice([topBottomWall(), leftRightWall()])
 
-    #Affichage de l'entrée et de la sortie sur le labyrinthe
-    maze[entryYCoord][entryXCoord] = "E"
-    maze[exitYCoord][exitXCoord] = "S"
+    # Marquer l'entrée et la sortie
+    maze[entryCoords[1]][entryCoords[0]] = "E"
+    maze[exitCoords[1]][exitCoords[0]] = "S"
 
-    #Génération des chemins
-    def wallAround(direction, XCoord, YCoord):
-        directionDict = {"droite":1, "gauche":-1, "haut":-1, "bas":1}
-        if list(directionDict.keys()).index(direction) < 2:
-            nextWallXCoord, nextWallYCoord = XCoord+directionDict[direction] ,YCoord
-            nextWall = maze[nextWallYCoord][nextWallXCoord]
-            return(nextWall)
-        else:
-            nextWallXCoord, nextWallYCoord = XCoord, YCoord+directionDict[direction]
-            nextWall = maze[nextWallYCoord][nextWallXCoord]
-            return(nextWall)
+    return maze, entryCoords
 
-    #Affichage du labyrinthe
-    print("\n"+"Affichage du labyrinthe : \n")
-    for line in maze:
-        print("".join(line))
+def pathGenerator(maze):
+    #On récupère les dimensions du labyrinthe
+    width, height = len(maze[0]), len(maze)
 
-#Demande des dimensions à l'utilisateur
-print("\n"+"#"*71)
-print("Bienvenue dans le résolveur de labyrinthes made in TW3 laboratories !")
-print("#"*71, "\n")
+    #On marque une cellule comme chemin
+    def path(x, y):
+        maze[y][x] = " "
 
-widthUserChoice = int(input("Veuillez saisir la largeur du labyrinthe : "))
-heightUserChoice = int(input("Veuillez saisir la hauteur du labyrinthe : "))
+    #On vérifie que la cellule n'est pas située sur les bordures (on évite donc d'avoir différentes ouvertures au niveau des bods)
+    def notInBorders(x, y):
+        return 0 < x < width - 1 and 0 < y < height - 1 and maze[y][x] == "█"
 
-mazeGenerator(widthUserChoice, heightUserChoice)
+    #On initialise la liste des cases visitées avec une case de départ
+    startXCoord, startYCoord = 1, 1
+    CoordsList = [(startXCoord, startYCoord)]
+    path(startXCoord, startYCoord)
+
+    #On définit les directions possibles (c.a.d., droite, gauche, haut et bas)
+    directionList = [(2, 0), (-2, 0), (0, -2), (0, 2)]
+
+    while CoordsList:
+        currentXCoord, currentYCoord = CoordsList[-1]
+
+        #On mélange les directions pour un labyrinthe aléatoire
+        shuffle(directionList)
+        foundPath = False
+
+        for directionXCoord, directionYCoord in directionList:
+            nextX, nextY = currentXCoord + directionXCoord, currentYCoord + directionYCoord
+
+            if notInBorders(nextX, nextY):
+                #On creuse un chemin en deux étapes (entre la case actuelle et la suivante)
+                path(currentXCoord + directionXCoord // 2, currentYCoord + directionYCoord // 2)
+                path(nextX, nextY)
+
+                #On ajoute la case suivante à la liste
+                CoordsList.append((nextX, nextY))
+                foundPath = True
+                break
+
+        #Et si aucune direction n'est valide, alors on revient en arrière
+        if not foundPath:
+            CoordsList.pop()
+
+#On affiche un message de bienvenue
+print("\n" + "#" * 71)
+print("Bienvenue dans le résolveur de labyrinthes made in TW3 labs !")
+print("#" * 71, "\n")
+
+#On demande les dimensions à l'utilisateur
+widthUserChoice, heightUserChoice = input("Veuillez saisir la largeur et la hauteur du labyrinthe (impair - x,y) : ").split(",")
+
+#On génère et affiche le labyrinthe
+maze, entryCoords = mazeGenerator(int(widthUserChoice), int(heightUserChoice))
+pathGenerator(maze)
+
+print("\nAffichage du labyrinthe : \n")
+for line in maze:
+    print("".join(line))
