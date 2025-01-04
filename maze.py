@@ -2,8 +2,8 @@ from random import *
 
 """
     Notes : ce programme génère un labyrinthe
-    où chaque mur est représenté par un "" et
-    chaque chemin est représenté par un "█". La gestion
+    où chaque mur est représenté par un "█" et
+    chaque chemin est représenté par un "". La gestion
     des erreurs d'entrée n'est pas encore prise en charge
     au même titre que l'algorithme de résolution du labyrinthe.
 """
