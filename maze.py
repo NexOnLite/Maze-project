@@ -138,7 +138,7 @@ while userChoice == "1":
     widthUserChoice, heightUserChoice = input("\nVeuillez saisir la largeur et la hauteur du labyrinthe (impair - x,y) : ").split(",")
     maze = Maze(int(widthUserChoice), int(heightUserChoice), id)
     maze.generateMaze()
-    maze.generatePaths()
+    maze.pathGenerator()
     maze.display()
     print("\n(On suppose que la résolution du labyrinthe a été effectuée.)")
     userChoice = input("\nSouhaitez-vous continuer (1) ou arrêter le programme (0) ? ")
