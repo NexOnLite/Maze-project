@@ -6,88 +6,140 @@ from random import *
     chaque chemin est représenté par un "". La gestion
     des erreurs d'entrée n'est pas encore prise en charge
     au même titre que l'algorithme de résolution du labyrinthe.
+
+    MAJ : introduction d'une classe "Maze" qui permet ainsi
+    la génération d'autant de labyrinthes que le désire
+    l'utilisateur.
 """
 
-def mazeGenerator(width, height):
-    #On crée le labyrinthe à l'aide d'"une liste de listes" - on se contente au départ d'un labyrinthe composé de "█"
-    maze = [["█" for i in range(width)] for j in range(height)]
+class Maze:
+    """
+    Classe "Maze" permettant la génération et l'affichage d'un labyrinthe. 
+    Chaque mur est représenté par un "█" et chaque chemin par un " ".
+    Prochaine MAJ : ajout d'une fonction "resolution" permettant la résolution du labyrinthe
+    """
 
-    #On génère les coordonnées de l'entrée et de la sortie du labyrinthe
-    def topBottomWall():
-        YCoord = choice([0, height - 1])
-        XCoord = choice(range(1, width - 1, 2))  #Toujours sur une cellule impaire
+    def __init__(self, width, height, id):
+        self.width = width
+        self.height = height
+        self.id = id
+        #On crée le labyrinthe à l'aide d'"une liste de listes" - on se contente au départ d'un labyrinthe composé de "█"
+        self.maze = [["█" for i in range(width)] for j in range(height)]  
+        self.entryCoords = None
+        self.exitCoords = None
+
+    #On génère des coordonnées aléatoires d'une cellule placée sur un des 4 murs
+    def topBottomWall(self):
+        YCoord = choice([0, self.height - 1])
+        XCoord = choice(range(1, self.width - 1, 2))  #On incrémente de 2 de sorte à toujours tomber sur une cellule impaire (résérvées aux chemins)
         return XCoord, YCoord
 
-    def leftRightWall():
-        YCoord = choice(range(1, height - 1, 2))  #Toujours sur une cellule impaire
-        XCoord = choice([0, width - 1])
+    def leftRightWall(self):
+        YCoord = choice(range(1, self.height - 1, 2))  #On incrémente de 2 de sorte à toujours tomber sur une cellule impaire (résérvées aux chemins)
+        XCoord = choice([0, self.width - 1])
         return XCoord, YCoord
 
-    entryCoords = choice([topBottomWall(), leftRightWall()])
-    exitCoords = choice([topBottomWall(), leftRightWall()])
+    def generateMaze(self):
 
-    # Marquer l'entrée et la sortie
-    maze[entryCoords[1]][entryCoords[0]] = "E"
-    maze[exitCoords[1]][exitCoords[0]] = "S"
+        """
+        Cette fonction génère le "corps" du
+        labyrinthe avec l'attribution aléatoire 
+        d'une entrée et d'une sortie.
+        """
 
-    return maze, entryCoords
+        #On génère les coordonnées de l'entrée et de la sortie
+        self.entryCoords = choice([self.topBottomWall(), self.leftRightWall()])
+        self.exitCoords = choice([self.topBottomWall(), self.leftRightWall()])
 
-def pathGenerator(maze):
-    #On récupère les dimensions du labyrinthe
-    width, height = len(maze[0]), len(maze)
+        #On "marque" l'entrée et de la sortie sur le labyrinthe, respectivement par "E" et "S"
+        self.maze[self.entryCoords[1]][self.entryCoords[0]] = "E"
+        self.maze[self.exitCoords[1]][self.exitCoords[0]] = "S"
 
-    #On marque une cellule comme chemin
-    def path(x, y):
-        maze[y][x] = " "
+    def pathGenerator(self):
 
-    #On vérifie que la cellule n'est pas située sur les bordures (on évite donc d'avoir différentes ouvertures au niveau des bods)
-    def notInBorders(x, y):
-        return 0 < x < width - 1 and 0 < y < height - 1 and maze[y][x] == "█"
+        """
+        Cette fonction permet, comme son nom l'indique,
+        de générer les chemins du labyrinthe.
+        """
 
-    #On initialise la liste des cases visitées avec une case de départ
-    startXCoord, startYCoord = 1, 1
-    CoordsList = [(startXCoord, startYCoord)]
-    path(startXCoord, startYCoord)
+        #On récupère les dimensions du labyrinthe
+        width, height = self.width, self.height
 
-    #On définit les directions possibles (c.a.d., droite, gauche, haut et bas)
-    directionList = [(2, 0), (-2, 0), (0, -2), (0, 2)]
+        
+        def path(x, y):
+            """
+            Cette fonction permet de marquer
+            une cellule comme un chemin, c.a.d, " ".
+            """
+            self.maze[y][x] = " "
 
-    while CoordsList:
-        currentXCoord, currentYCoord = CoordsList[-1]
+        def notInBorders(x, y):
+            """
+            Cette fonction vérifie que la cellule n'est pas 
+            située sur les bordures (on évite donc d'avoir 
+            différentes ouvertures au niveau des bords)
+            """
+            return 0 < x < width - 1 and 0 < y < height - 1 and self.maze[y][x] == "█"
 
-        #On mélange les directions pour un labyrinthe aléatoire
-        shuffle(directionList)
-        foundPath = False
+        #On initialise la liste des cases visitées avec une case de départ
+        startXCoord, startYCoord = 1, 1
+        CoordsList = [(startXCoord, startYCoord)]
+        path(startXCoord, startYCoord)
 
-        for directionXCoord, directionYCoord in directionList:
-            nextX, nextY = currentXCoord + directionXCoord, currentYCoord + directionYCoord
+        #On définit les directions possibles (c.a.d., droite, gauche, haut et bas)
+        directionList = [(2, 0), (-2, 0), (0, -2), (0, 2)]
 
-            if notInBorders(nextX, nextY):
-                #On creuse un chemin en deux étapes (entre la case actuelle et la suivante)
-                path(currentXCoord + directionXCoord // 2, currentYCoord + directionYCoord // 2)
-                path(nextX, nextY)
+        while CoordsList:
+            currentXCoord, currentYCoord = CoordsList[-1]
 
-                #On ajoute la case suivante à la liste
-                CoordsList.append((nextX, nextY))
-                foundPath = True
-                break
+            #On mélange les directions pour obtenir un labyrinthe aléatoire
+            shuffle(directionList)
+            foundPath = False
 
-        #Et si aucune direction n'est valide, alors on revient en arrière
-        if not foundPath:
-            CoordsList.pop()
+            for directionXCoord, directionYCoord in directionList:
+                nextX, nextY = currentXCoord + directionXCoord, currentYCoord + directionYCoord
 
-#On affiche un message de bienvenue
-print("\n" + "#" * 71)
+                if notInBorders(nextX, nextY):
+                    #On trace un chemin en deux étapes (entre la case actuelle et la suivante)
+                    path(currentXCoord + directionXCoord // 2, currentYCoord + directionYCoord // 2)
+                    path(nextX, nextY)
+
+                    #On ajoute la case suivante à la liste
+                    CoordsList.append((nextX, nextY))
+                    foundPath = True
+                    break
+            
+            #Et si aucune direction n'est valide, alors on revient en arrière
+            if not foundPath:
+                CoordsList.pop()
+
+    def display(self):
+
+        """
+        Cette fonction permet 
+        l'affichage du labyrinthe.
+        """
+
+        print(f"\nAffichage du labyrinthe n°{self.id}: \n")
+        for line in self.maze:
+            print("".join(line))
+
+#On affiche d'un message de bienvenue
+print("\n" + "#" * 61)
 print("Bienvenue dans le résolveur de labyrinthes made in TW3 labs !")
-print("#" * 71, "\n")
+print("#" * 61)
 
-#On demande les dimensions à l'utilisateur
-widthUserChoice, heightUserChoice = input("Veuillez saisir la largeur et la hauteur du labyrinthe (impair - x,y) : ").split(",")
+#On initialise quelques variables de base
+userChoice = "1"
+id = 1
 
-#On génère et affiche le labyrinthe
-maze, entryCoords = mazeGenerator(int(widthUserChoice), int(heightUserChoice))
-pathGenerator(maze)
-
-print("\nAffichage du labyrinthe : \n")
-for line in maze:
-    print("".join(line))
+#On crée une (ou de plusieurs) instance(s) de la classe Maze et on génère le labyrinthe
+while userChoice == "1":
+    widthUserChoice, heightUserChoice = input("\nVeuillez saisir la largeur et la hauteur du labyrinthe (impair - x,y) : ").split(",")
+    maze = Maze(int(widthUserChoice), int(heightUserChoice), id)
+    maze.generateMaze()
+    maze.generatePaths()
+    maze.display()
+    print("\n(On suppose que la résolution du labyrinthe a été effectuée.)")
+    userChoice = input("\nSouhaitez-vous continuer (1) ou arrêter le programme (0) ? ")
+    id += 1
