@@ -1,5 +1,5 @@
 from random import shuffle, choice
-from config import WALL, EMPTY,PATH, Coord, State
+from config import WALL, EMPTY, Coord, State
 
 class MazeGenerator:
     def __init__(self, width: int, height: int):
